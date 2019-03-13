@@ -19,9 +19,9 @@ class bAuth(BasicAuth):
         result = cur.fetchall()
         conn.close()
         if result:
-            return jsonify(result), 201
+            return True
         else:
-            return jsonify({'Error': 'Unauthorized'}), 401
+            return False
 
 auth = bAuth(app)
 
@@ -100,9 +100,6 @@ def delete_user():
         conn.close()
         print(query)
         return jsonify({'Success': 'User deleted'}), 201
-    else:
-        print(query)
-        return jsonify({'Error': 'User does not exist'}), 409
 
 @app.route('/users', methods = ['PATCH'])
 @auth.required
@@ -126,8 +123,6 @@ def change_pass():
         conn.commit()
         conn.close()
         return jsonify({'Success': 'Password changed'}), 201
-    else:
-        return jsonify({'Error': 'User does not exist'}), 409
 
 
 app.run()
