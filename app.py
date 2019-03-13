@@ -1,219 +1,133 @@
-from flask import Flask, jsonify, request
 
+import flask
+from flask import Flask, request, g, jsonify, Response, json
 import sqlite3
-import time
+from flask_basicauth import BasicAuth
+import hashlib
 
-
-CREATE_DB_FILE = 'createdb.sql'
+app = flask.Flask(__name__)
+app.config["debug"] = True
 DATABASE = "database.db"
-app = Flask(__name__)
 
-
-
-
-@app.cli.command('createdb')
-#basicauth
-def createdb():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    with open(CREATE_DB_FILE) as queryfile:
-        cursor.executescript(queryfile.read())
-    conn.close()
-
-
-#Add tags for a new URL
-@app.route('/article/<url>/tags/<tag>', methods=['PUT', 'DELETE'])
-#basicauth
-def add_url_and_tag(url, tag):
-    if request.method == 'PUT':
-        try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
-            query = '''SELECT 1
-                        FROM articles
-                        WHERE id = ?'''
-            result = cursor.execute(query, (url)).fetchall()
-
-            if not result:
-                return jsonify({"Error": "Article with url doesnt exist"}), 409
-
-
-            query = '''REPLACE INTO tags(url, tag) VALUES(?, ?)'''
-            cursor.execute(query, (url, tag))
-            conn.commit()
-            conn.close()
-            print(query)
-            return jsonify({"true": "success"}), 200
-        except Exception as exc:
-            print(exc)
-            return jsonify({"false": "failure"}), 400
-
-    else:
-        try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
-            query = '''DELETE FROM tags
-                        WHERE url = ?
-                         AND tag = ?'''
-            cursor.execute(query, (url, tag))
-
-            conn.commit()
-            conn.close()
-            print(query)
-            return jsonify({"true": "success"}), 200
-        except Exception as exc:
-            print(exc)
-            return jsonify({"false": "failure"}), 400
-
-
-
-
-@app.route('/article/<url>/tags', methods = ['GET'])
-def get_tags_for_url(url):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-
-    query = '''SELECT tag
-    FROM tags WHERE url = ?'''
-    all_tags = cursor.execute(query, [url]).fetchall()
-    conn.close()
-    if all_tags:
-        return jsonify(all_tags), 200
-    else:
-        return jsonify({"Error":"No url with tags exists"}), 404
-
-
-#Retrieve list of URLs with a given tag
-@app.route('/article/tags/<tag>', methods = ['GET'])
-def get_urls_with_given_tag(tag):
-
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    query = '''SELECT  url
-        FROM tags
-        WHERE tag = ?'''
-
-    cursor.execute(query, [tag])
-
-    results = cursor.fetchall()
-    results = [dict(row) for row in results]
-    print(type(results))
-    print(results)
-    output = []
-
-    for item in results:
-        output.append(item['url'])
-
-    conn.close()
-
-    print(query)
-    return jsonify({"urls": output}), 200
-
-@app.route('/article/<url>/comments', methods = ['POST'])
-def post_comment(url):
-    try:
+class bAuth(BasicAuth):
+    def check_credentials(self, username, password):
         conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        query = '''SELECT 1
-              FROM articles
-              WHERE id = ?'''
-        result = cursor.execute(query, (url)).fetchall()
-
-
-        if not result:
-            return jsonify({"Error": "Article with url doesnt exist"}), 409
-        #Above is checking if comment can even be made, che cking if article exists
-        #Now post new comment
-
-        query = '''INSERT INTO comments (url, date_added, author, comment) VALUES (?, ?, ?, ?)'''
-        epoch_time = int(time.time())
-        if 'username' in request.headers:
-            author = request.headers['username']
-        else:
-            author = 'Anon'
-
-        data = request.get_json()
-        if 'comment' in data:
-            comment = data['comment']
-        else:
-            return jsonify({"Error": "No comment"}), 400
-
-        cursor.execute(query, (url, epoch_time, author, comment))
-        conn.commit()
-
-        id = cursor.lastrowid
-
+        cur = conn.cursor()
+        password_hash = hashlib.md5(password.encode())
+        query = "SELECT * FROM users WHERE username = ? AND password = ?"
+        cur.execute(query, [username, password_hash.hexdigest()])
+        result = cur.fetchall()
         conn.close()
+        if result:
+            return jsonify(result), 201
+        else:
+            return jsonify({'Error': 'Unauthorized'}), 401
 
-        return jsonify({"id": id}), 200
-    except Exception as exc:
-        print(exc)
-        return jsonify({"false": "failure"}), 400
+auth = bAuth(app)
 
-@app.route('/article/<url>/comments/<id>', methods = ['DELETE'])
-def delete_Comment(url, id):
-    # Delete an individual comment
+@app.cli.command()
+def init_db():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('ini_DB.sql', mode='r') as f:
+            db.cursor().exexcutescript(f.read())
+        db.close()
+
+def make_dicts(cursor, row):
+    return dict((cursor.description[idx][0], value)
+                for idx, value in enumerate(row))
+
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = make_dicts
+    return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+#User Register
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    user = data['username']
+    password = data['password']
+    email = data['email']
     conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    try:
-        query = '''DELETE FROM comments
-                    WHERE id = ?
-                    AND url = ?'''
-        cursor.execute(query, (id, url))
+    #conn.row_factory = make_dicts
+    cur = conn.cursor()
 
+    #check if user exists
+    query = "SELECT username FROM users WHERE username = ?"
+    cur.execute(query, [user])
+    check_user = cur.fetchall()
+    #if not exist
+    if not check_user:
+        password_hash = hashlib.md5(password.encode())
+        query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)"
+        cur.execute(query, [user, email, password_hash.hexdigest()])
         conn.commit()
-    except:
-        return jsonify({"Error": "Comment didnt exist"}), 404
-    conn.close()
-    return jsonify({"success": "Comment deleted"}), 200
+        conn.close()
+        print(query)
+        return jsonify({'Success': 'User Created'}), 201
+    else:
+        print(query)
+        return jsonify({'Error':'User exists'}), 409
 
-####Get number of comments on a given article
-@app.route('/article/<id>/comments/count', methods = ['GET'])
-def get_number_of_comments(id):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
 
-    query = '''SELECT COUNT(*) AS COUNT
-        FROM comments
-        WHERE id = ?
-        '''
-
-    cursor.execute(query, [id])
-
-    results = cursor.fetchone()
-    results = dict(results)
-    count = results['COUNT']
-    conn.close()
-
-    print(query)
-    return jsonify({"count": count}), 200
-
-####GET n most recent comments on a URL
-@app.route('/article/<url>/comments', methods = ['GET'])
-def get_number_most_recent_comments(url):
-
-    limit = request.args.get('limit')
-    if not limit:
-        return jsonify({"Error": "Please provide limit in query string e.g. ?limit=10"}), 200
+@app.route('/users', methods=['DELETE'])
+@auth.required
+def delete_user():
+    data = request.get_json()
+    user = request.authorization['username']
+    # password = data['password']
+    # password_hash = hashlib.md5(password.encode())
 
     conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    conn.row_factory = make_dicts
+    cur = conn.cursor()
+    query = "SELECT username FROM users WHERE username = ?"
+    cur.execute(query, [user])
+    check_user = cur.fetchall()
+    if check_user:
+        query = "DELETE FROM users WHERE username = ?"
+        cur.execute(query, [user])
+        conn.commit()
+        conn.close()
+        print(query)
+        return jsonify({'Success': 'User deleted'}), 201
+    else:
+        print(query)
+        return jsonify({'Error': 'User does not exist'}), 409
 
-    query = '''SELECT id, url, date_added, author, comment 
-                FROM comments 
-                WHERE url = ?
-                ORDER BY ID ASC
-                LIMIT ?;'''
-    cursor.execute(query, [url, limit])
+@app.route('/users', methods = ['PATCH'])
+@auth.required
+def change_pass():
+    data = request.get_json()
+    user = request.authorization['username']
+    new_pass = data['new_pass']
+    password_hash = hashlib.md5(new_pass.encode())
 
-    results = cursor.fetchall()
-    results = [dict(row) for row in results]
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = make_dicts
+    cur = conn.cursor()
 
-    for item in results:
-        item['date_added'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item['date_added']))
+    query = "SELECT username FROM users WHERE username = ?"
+    cur.execute(query, [user])
+    check_user = cur.fetchall()
 
-    return jsonify({'comments': results}), 200
+    if check_user:
+        query = "UPDATE users SET password = ? WHERE username = ?"
+        cur.execute(query, [password_hash.hexdigest(), user])
+        conn.commit()
+        conn.close()
+        return jsonify({'Success': 'Password changed'}), 201
+    else:
+        return jsonify({'Error': 'User does not exist'}), 409
+
+
+app.run()

@@ -1,0 +1,5 @@
+curl -X PATCH --user tho96 -H 'Content-Type: application/json' -d '{"password":"345"}' http://127.0.0.1:5000/users/tho96^C
+
+curl -X DELETE --user test3 http://127.0.0.1:5000/users/tho96
+
+curl -X POST -H 'Content-Type: application/json' -d '{"username":"tho96", "email":"tho96@example.com", "password":"123"}' http://127.0.0.1:5000/register
