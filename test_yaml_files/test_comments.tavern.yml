@@ -1,0 +1,53 @@
+test_name: Comments
+
+stages:
+  - name: Try to add a comment to an article that doesn't exist
+    request:
+      url: "http://localhost:5000/article/1/comments"
+      method: POST
+      headers:
+        content-type: application/json
+      json:
+        comment: "Invalid comment"
+    response:
+      status_code: 404
+
+  - name: Post an anonymous comment on an article
+    request:
+      url: "http://localhost:5000/article/2/comments"
+      method: POST
+      headers:
+        content-type: application/json
+      json:
+        comment: "I like turrtles"
+    response:
+      status_code: 201
+
+  - name: Post an authenticated comment on an article
+    request:
+      url: "http://localhost:5000/article/4/comments"
+      method: POST
+      headers:
+        content-type: application/json
+      json:
+          comment: "I loved this article"
+    response:
+      status_code: 201
+
+  - name: Get number of comments on a given article
+    request:
+      url: "http://localhost:5000/article/1/comments/count"
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+
+  - name: Check that the comments on the article were returned in order
+    request:
+      url: "http://localhost:5000/article/1/comments"
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
