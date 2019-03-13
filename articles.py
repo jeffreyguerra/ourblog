@@ -55,9 +55,9 @@ def user_exists(user):
     result = cur.fetchone()
     conn.close()
     if result:
-        return jsonify(result), 201
+        return True
     else:
-        return jsonify({'Error': 'Unauthorized'}), 401
+        return False
 
 @app.route('/articles', methods=['POST'])
 @auth.required
