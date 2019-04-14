@@ -4,7 +4,7 @@ from flask_basicauth import BasicAuth
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
-DATABASE = 'database.db'
+DATABASE = 'artile.db'
 
 class bAuth(BasicAuth):
     def check_credentials(self, username, password):
@@ -22,13 +22,6 @@ class bAuth(BasicAuth):
 
 auth = bAuth(app)
 
-@app.cli.command()
-def init_db():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('ini_DB.sql', mode='r') as f:
-            db.cursor().exexcutescript(f.read())
-        db.close()
 
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value)

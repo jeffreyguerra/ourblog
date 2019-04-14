@@ -5,35 +5,9 @@ import time
 from flask import Flask, jsonify, request
 import hashlib
 
-CREATE_DB_FILE = 'createdb.sql'
-DATABASE = "database.db"
+DATABASE = "comment.db"
 app = Flask(__name__)
 
-# class bAuth(BasicAuth):
-#     def check_credentials(self, username, password):
-#         conn = sqlite3.connect(DATABASE)
-#         cur = conn.cursor()
-#         password_hash = hashlib.md5(password.encode())
-#         query = "SELECT * FROM users WHERE username = ? AND password = ?"
-#         cur.execute(query, [username, password_hash.hexdigest()])
-#         result = cur.fetchall()
-#         conn.close()
-#         #if (result[0] > 0):
-#         if result:
-#             return True
-#         else:
-#             return False
-#
-# auth = bAuth(app)
-
-@app.cli.command('createdb')
-#basicauth
-def createdb():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    with open(CREATE_DB_FILE) as queryfile:
-        cursor.executescript(queryfile.read())
-    conn.close()
 
 
 

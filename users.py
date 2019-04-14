@@ -7,7 +7,7 @@ import hashlib
 
 app = flask.Flask(__name__)
 app.config["debug"] = True
-DATABASE = "database.db"
+DATABASE = "user.db"
 
 class bAuth(BasicAuth):
     def check_credentials(self, username, password):
@@ -24,14 +24,6 @@ class bAuth(BasicAuth):
             return False
 
 auth = bAuth(app)
-
-@app.cli.command()
-def init_db():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('ini_DB.sql', mode='r') as f:
-            db.cursor().exexcutescript(f.read())
-        db.close()
 
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value)
