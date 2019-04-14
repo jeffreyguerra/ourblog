@@ -1,0 +1,5 @@
+articles: FLASK_APP=articles.py flask run -p $PORT
+comments: FLASK_APP=app2.py flask run -p $PORT
+tags: FLASK_APP=app2.py flask run -p $PORT
+users: FLASK_APP=app.py flask run -p $PORT
+EOM
