@@ -1,7 +1,7 @@
 # ourblog
 
 ## Team Members
-* Jeffery Guerra
+* Jeffrey Guerra
 * Chloe Ho
 * Christian Jimenez
 
