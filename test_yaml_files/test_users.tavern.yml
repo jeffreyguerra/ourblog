@@ -3,7 +3,7 @@ test_name: Users
 stages:
   - name: Try to change the password for a user that does not exist
     request:
-      url: "http://localhost:5000/users"
+      url: "http://localhost/users"
       method: PATCH
       headers:
         content-type: application/json
@@ -15,7 +15,7 @@ stages:
 
   - name: Create a user
     request:
-      url: "http://localhost:5000/register"
+      url: "http://localhost/register"
       method: POST
       headers:
         content-type: application/json
@@ -28,7 +28,7 @@ stages:
 
   - name: Change a user's password
     request:
-      url: "http://localhost:5000/users"
+      url: "http://localhost/users"
       method: PATCH
       headers:
         content-type: application/json
@@ -40,7 +40,7 @@ stages:
 
   - name: Delete the user
     request:
-      url: "http://localhost:5000/users"
+      url: "http://localhost/users"
       method: DELETE
       headers:
         content-type: application/json
@@ -51,7 +51,7 @@ stages:
 
   - name: Try to change the password for the deleted user
     request:
-      url: "http://localhost:5000/users"
+      url: "http://localhost/users"
       method: PATCH
       headers:
         content-type: application/json

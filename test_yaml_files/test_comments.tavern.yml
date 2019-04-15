@@ -3,7 +3,7 @@ test_name: Comments
 stages:
   - name: Try to add a comment to an article that doesn't exist
     request:
-      url: "http://localhost:5000/article/1/comments"
+      url: "http://localhost/article/1/comments"
       method: POST
       headers:
         content-type: application/json
@@ -14,7 +14,7 @@ stages:
 
   - name: Post an anonymous comment on an article
     request:
-      url: "http://localhost:5000/article/2/comments"
+      url: "http://localhost/article/2/comments"
       method: POST
       headers:
         content-type: application/json
@@ -25,7 +25,7 @@ stages:
 
   - name: Post an authenticated comment on an article
     request:
-      url: "http://localhost:5000/article/4/comments"
+      url: "http://localhost/article/4/comments"
       method: POST
       headers:
         content-type: application/json
@@ -36,7 +36,7 @@ stages:
 
   - name: Get number of comments on a given article
     request:
-      url: "http://localhost:5000/article/1/comments/count"
+      url: "http://localhost/article/1/comments/count"
       method: GET
       headers:
         content-type: application/json
@@ -45,7 +45,7 @@ stages:
 
   - name: Check that the comments on the article were returned in order
     request:
-      url: "http://localhost:5000/article/1/comments"
+      url: "http://localhost/article/1/comments"
       method: GET
       headers:
         content-type: application/json

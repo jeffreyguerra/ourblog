@@ -3,7 +3,7 @@ test_name: Articles
 stages:
   - name: Try to post an article without authenticating
     request:
-      url: "http://localhost:5000/articles"
+      url: "http://localhost/articles"
       method: POST
       headers:
         content-type: application/json
@@ -16,7 +16,7 @@ stages:
 
   - name: Try a post an article using the wrong password
     request:
-      url: "http://localhost:5000/articles"
+      url: "http://localhost/articles"
       method: POST
       headers:
         content-type: application/json
@@ -30,7 +30,7 @@ stages:
 
   - name: Post an article successfully
     request:
-      url: "http://localhost:5000/articles"
+      url: "http://localhost/articles"
       method: POST
       headers:
         content-type: application/json
@@ -43,7 +43,7 @@ stages:
 
   - name: Retrieve the newly posted article
     request:
-      url: "http://localhost:5000/articles/1"
+      url: "http://localhost/articles/1"
       method: GET
       headers:
         content-type: application/json
@@ -52,7 +52,7 @@ stages:
 
   - name: Check that the newly posted articles is the most recent
     request:
-      url: "http://localhost:5000/articles/recent/1"
+      url: "http://localhost/articles/recent/1"
       method: GET
       headers:
         content-type: application/json

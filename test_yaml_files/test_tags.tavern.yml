@@ -3,7 +3,7 @@ test_name: Tags
 stages:
   - name: Add an article with a new tag
     request:
-      url: "http://localhost:5000/article/1/tags/HiAvery"
+      url: "http://localhost/article/1/tags/HiAvery"
       method: PUT
       headers:
         content-type: application/json
@@ -12,7 +12,7 @@ stages:
 
   - name: List all articles with the new tag
     request:
-      url: "http://localhost:5000/article/tags/HiAvery"
+      url: "http://localhost/article/tags/HiAvery"
       method: GET
       headers:
         content-type: application/json
@@ -21,7 +21,7 @@ stages:
 
   - name: Add another tag to the article
     request:
-      url: "http://localhost:5000/article/1/tags/ILikeTurrtles"
+      url: "http://localhost/article/1/tags/ILikeTurrtles"
       method: PUT
       headers:
         content-type: application/json
@@ -30,7 +30,7 @@ stages:
 
   - name: Delete one of the tags from the article
     request:
-      url: "http://localhost:5000/article/1/tags/HiAvery"
+      url: "http://localhost/article/1/tags/HiAvery"
       method: DELETE
       headers:
         content-type: application/json
@@ -39,7 +39,7 @@ stages:
 
   - name: Add a tag to an article that doesn't exist
     request:
-      url: "http://localhost:5000/article/1/tags/HiAvery2"
+      url: "http://localhost/article/1/tags/HiAvery2"
       method: POST
       headers:
         content-type: application/json
