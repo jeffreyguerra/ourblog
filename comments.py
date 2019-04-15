@@ -9,8 +9,6 @@ DATABASE = "comment.db"
 app = Flask(__name__)
 
 
-
-
 @app.route('/article/<url>/comments', methods = ['POST'])
 def post_comment(url):
     try:

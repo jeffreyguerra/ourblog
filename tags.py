@@ -19,15 +19,6 @@ def add_url_and_tag(url, tag):
         try:
             conn = sqlite3.connect(DATABASE)
             cursor = conn.cursor()
-            query = '''SELECT 1
-                        FROM articles
-                        WHERE id = ?'''
-            result = cursor.execute(query, (url)).fetchall()
-
-            if not result:
-                return jsonify({"Error": "Article with url doesnt exist"}), 409
-
-
             query = '''REPLACE INTO tags(url, tag) VALUES(?, ?)'''
             cursor.execute(query, (url, tag))
             conn.commit()

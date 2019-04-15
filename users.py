@@ -1,6 +1,6 @@
 
 import flask
-from flask import Flask, request, g, jsonify, Response, json
+from flask import Flask, request, g, jsonify, Response, json, url_for, make_response
 import sqlite3
 from flask_basicauth import BasicAuth
 import hashlib
@@ -41,6 +41,49 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
+
+@app.route('/auth',methods=['GET'])
+def auth():
+    auth = request.authorization
+    conn = sqlite3.connect(DATABASE)
+    query = "SELECT password FROM users WHERE username = ? AND password = ?"
+    if not auth:
+        return Response(
+            json.dumps({
+                'status':   'ERROR',
+                'message':  'The operation requires authentication'
+            }),
+            status='401',
+            headers={'WWW-Authenticate': 'Basic realm="Login Required"'},
+            mimetype='application/json'
+        )
+    if not conn:
+        return Response(Error="Fail to connect to database", status='500')
+    c = conn.cursor()
+    try:
+        c.execute(query)
+        result = c.fetchone()
+    except:
+        return Response(Error="Error running query to database", status='500')
+
+    if not result or len(result) == 0:
+        return Response(
+            json.dumps({
+                'status':   'ERROR',
+                'message':  'The provided credentials are incorrect'
+            }),
+            status='401',
+            mimetype='application/json'
+        )
+    else:
+        return Response(
+            json.dumps({
+                'status': 'OK',
+            }),
+            status='200',
+            mimetype='application/json'
+        )
 
 #User Register
 @app.route('/register', methods=['POST'])
