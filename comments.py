@@ -69,7 +69,7 @@ def delete_Comment(url, id):
     return jsonify({"success": "Comment deleted"}), 200
 
 ####Get number of comments on a given article
-@app.route('/article/<id>/comments/count', methods = ['GET'])
+@app.route('/article/comments/count/<id>', methods = ['GET'])
 def get_number_of_comments(id):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
@@ -91,7 +91,7 @@ def get_number_of_comments(id):
     return jsonify({"count": count}), 200
 
 ####GET n most recent comments on a URL
-@app.route('/article/<url>/comments', methods = ['GET'])
+@app.route('/article/comments/<url>', methods = ['GET'])
 def get_number_most_recent_comments(url):
 
     limit = request.args.get('limit')

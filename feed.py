@@ -20,7 +20,7 @@ def summary():
             title = d['title'],
             author = d['author'],
             pubDate = datetime.datetime(2014, 12, 29, 10, 00),
-            link = "http://localhost/articles/recent/10"
+            link = "http://localhost/articles/recent/meta/10"
         )
         item.append(item1)
     feed = Feed(
@@ -43,7 +43,7 @@ def full_feed():
     articles = []
 
     for d in data:
-        # article_id = d['url'].split('/')[-1]
+        article_id = d['url'].split('/')[-1]
         item2 = Item(
             title = d['title'],
             pubDate = datetime.datetime(2014, 12, 29, 10, 00),
@@ -55,11 +55,11 @@ def full_feed():
         item2.author = a_data['author']
         item2.description = a_data['body']
 
-        c_response = requests.get("http://localhost/article/" + str(d['article_id']) + "/comments/count")
+        c_response = requests.get("http://localhost/article/comments/count/" + str(d['article_id']))
         c_data = c_response.json()
         item2.comments = c_data['count']
 
-        t_response = requests.get("http://localhost/article/" + str(d['article_id']) + "/tags")
+        t_response = requests.get("http://localhost/article/tags/" + str(d['article_id']))
         t_data = t_response.json()
         item2.categories = t_data['tags']
         articles.append(item2)
@@ -81,8 +81,8 @@ def comment_feed():
     a_data = a_response.json()
     comments = []
     for a in a_data:
-        # article_id = a['url'].split('/')[-1]
-        c_response = requests.get("http://localhost/article/" + str(a['article_id']) + "/comments")
+        article_id = a['url'].split('/')[-1]
+        c_response = requests.get("http://localhost/article/comments/" + str(a['article_id']))
         c_data = c_response.json()
         for c in c_data:
             item3 = Item(
