@@ -5,7 +5,6 @@ from flask import Flask, jsonify, request, Response
 # from flask_basicauth import BasicAuth
 
 app = Flask(__name__)
-app.config["DEBUG"] = True
 
 # def parse(url):
 #     return rfeed.parse(url)
@@ -102,6 +101,3 @@ def comment_feed():
         item = comments
     )
     return feed.rss()
-
-if __name__ == '__main__':
-    app.run()
