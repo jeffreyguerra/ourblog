@@ -74,7 +74,7 @@ def get_article(id):
         return jsonify({'Error': 'Article not found'}), 404
 
 
-@app.route('/articles/<id>', methods=['PATCH'])
+@app.route('/articles/edit/<id>', methods=['PATCH'])
 def edit_article(id):
     data = request.get_json()
     title = data['title']
@@ -98,7 +98,7 @@ def edit_article(id):
     else:
         return jsonify({'Error': 'No permission'}), 409
 
-@app.route('/articles/<id>', methods=['DELETE'])
+@app.route('/articles/delete/<id>', methods=['DELETE'])
 def delete_article(id):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = make_dicts
