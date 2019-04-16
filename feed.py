@@ -43,23 +43,23 @@ def full_feed():
     articles = []
 
     for d in data:
-        article_id = d['url'].split('/')[-1]
+        # article_id = d['url'].split('/')[-1]
         item2 = Item(
             title = d['title'],
             pubDate = datetime.datetime(2014, 12, 29, 10, 00),
-            link = f"http://localhost/article/{article_id}"
+            link = "http://localhost/article/"+str(d['article_id'])
         )
-        a_response = requests.get(f"http://localhost/article/{article_id}")
+        a_response = requests.get("http://localhost/article/" + str(d['article_id']))
         a_data = a_response.json()
         item2.title = a_data['title']
         item2.author = a_data['author']
         item2.description = a_data['body']
 
-        c_response = requests.get(f"http://localhost/article/{article_id}/comments/count")
+        c_response = requests.get("http://localhost/article/" + str(d['article_id']) + "/comments/count")
         c_data = c_response.json()
         item2.comments = c_data['count']
 
-        t_response = requests.get(f"http://localhost/article/{article_id}/tags")
+        t_response = requests.get("http://localhost/article/" + str(d['article_id']) + "/tags")
         t_data = t_response.json()
         item2.categories = t_data['tags']
         articles.append(item2)
@@ -81,15 +81,15 @@ def comment_feed():
     a_data = a_response.json()
     comments = []
     for a in a_data:
-        article_id = a['url'].split('/')[-1]
-        c_response = requests.get(f"http://localhost/article/{article_id}/comments")
+        # article_id = a['url'].split('/')[-1]
+        c_response = requests.get("http://localhost/article/" + str(a['article_id']) + "/comments")
         c_data = c_response.json()
         for c in c_data:
             item3 = Item(
                 author = c['author'],
                 comment = c['comment'],
                 pubDate = datetime.datetime(2014, 12, 29, 10, 00),
-                link = f"http://localhost/article/{article_id}"
+                link = "http://localhost/article/" + str(c['article_id'])
             )
             comments.append(item3)
 
