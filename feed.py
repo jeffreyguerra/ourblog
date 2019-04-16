@@ -3,6 +3,7 @@ import requests, json
 from rfeed import Item, Feed
 from flask import Flask, jsonify, request, Response
 # from flask_basicauth import BasicAuth
+PROJECT_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 app = Flask(__name__)
 
