@@ -9,21 +9,21 @@ app = flask.Flask(__name__)
 app.config["debug"] = True
 DATABASE = "user.db"
 
-class bAuth(BasicAuth):
-    def check_credentials(self, username, password):
-        conn = sqlite3.connect(DATABASE)
-        cur = conn.cursor()
-        password_hash = hashlib.md5(password.encode())
-        query = "SELECT * FROM users WHERE username = ? AND password = ?"
-        cur.execute(query, [username, password_hash.hexdigest()])
-        result = cur.fetchall()
-        conn.close()
-        if result:
-            return True
-        else:
-            return False
-
-auth = bAuth(app)
+# class bAuth(BasicAuth):
+#     def check_credentials(self, username, password):
+#         conn = sqlite3.connect(DATABASE)
+#         cur = conn.cursor()
+#         password_hash = hashlib.md5(password.encode())
+#         query = "SELECT * FROM users WHERE username = ? AND password = ?"
+#         cur.execute(query, [username, password_hash.hexdigest()])
+#         result = cur.fetchall()
+#         conn.close()
+#         if result:
+#             return True
+#         else:
+#             return False
+#
+# auth = bAuth(app)
 
 def make_dicts(cursor, row):
     return dict((cursor.description[idx][0], value)
@@ -115,7 +115,7 @@ def register():
 
 
 @app.route('/users', methods=['DELETE'])
-@auth.required
+# @auth.required
 def delete_user():
     data = request.get_json()
     user = request.authorization['username']
@@ -137,7 +137,7 @@ def delete_user():
         return jsonify({'Success': 'User deleted'}), 201
 
 @app.route('/users', methods = ['PATCH'])
-@auth.required
+# @auth.required
 def change_pass():
     data = request.get_json()
     user = request.authorization['username']
