@@ -6,9 +6,6 @@ from flask import Flask, jsonify, request, Response
 
 app = Flask(__name__)
 
-# def parse(url):
-#     return rfeed.parse(url)
-
 @app.route("/rss", methods=['GET'])
 def summary():
     response = requests.get("http://localhost/articles/recent/meta/10")
