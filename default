@@ -26,7 +26,7 @@
 	 server 127.0.0.1:5001;
 	 server 127.0.0.1:5002;
 	}
-	
+
 	upstream users_serv {
 	 server 127.0.0.1:5100;
 	 server 127.0.0.1:5101;
@@ -38,13 +38,18 @@
 	 server 127.0.0.1:5201;
 	 server 127.0.0.1:5202;
 	}
-	
+
 	upstream tags_serv {
 	 server 127.0.0.1:5300;
 	 server 127.0.0.1:5301;
 	 server 127.0.0.1:5302;
 	}
 
+	upstream rss_serv {
+	 server 127.0.0.1:5400;
+	 server 127.0.0.1:5401;
+	 server 127.0.0.1:5402;
+	}
 
 server {
 	listen 80 default_server;
@@ -99,26 +104,28 @@ server {
 		auth_request /auth;
 		proxy_pass http://comments_serv/comments;
 	}
-	
+
 	location /tags {
-	
+
 		auth_request /auth;
 		proxy_pass http://tags_serv/tags;
-	} 
-	
-	
+	}
 
-	
+	location /rss {
+		proxy_pass http://rss_serv/rss;
+	}
+
+
 	location = /auth {
 			internal;
 			proxy_pass	http://users_serv/auth;
 			proxy_pass_header Authorization;
 			proxy_set_header Authorization $http_authorization;
-			proxy_pass_request_body off;	
+			proxy_pass_request_body off;
 			proxy_set_header Content-Length "";
 			proxy_set_header X-Original-URI $request_uri;
 				}
-		}		
+		}
 
 # Virtual Host configuration for example.com
 #
