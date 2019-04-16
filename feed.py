@@ -12,22 +12,24 @@ app.config["DEBUG"] = True
 
 @app.route("/rss", methods=['GET'])
 def summary():
-    response = requests.get("http://localhost:5000/articles/recent/meta/10")
+    response = requests.get("http://localhost/articles/recent/meta/10")
     data = response.json()
+    item = []
     for d in data:
         item1 = Item(
             title = d['title'],
             author = d['author'],
             pubDate = datetime.datetime(2014, 12, 29, 10, 00),
-            link = "http://localhost:5000/articles/recent/10"
+            link = "http://localhost/articles/recent/10"
         )
+        item.append(item1)
     feed = Feed(
         title = "A summary feed listing",
         link = "http://localhost/rss",
         description = "a summary feed listing the title, author, date, and link for 10 most recent articles",
         language = "en-US",
         lastBuildDate = datetime.datetime.now(),
-        items = [item1]
+        items = item
     )
     return feed.rss()
 
@@ -36,31 +38,31 @@ def summary():
 
 @app.route("/rss/full_feed", methods = ['GET'])
 def full_feed():
-    a_response = requests.get("http://localhost/articles/recent/10")
-    t_response = requests.get("http://localhost/article/get?url=/tags")
-    c_response = requests.get("http://localhost/article/get?id=/comments/count")
-    a_data = a_response.json()
-    t_data = t_response.json()
-    c_data = c_response.json()
-    for a in a_data:
-        title = a['title']
-        author = a['author']
-        description = a['body']
+    response = requests.get("http://localhost/articles/recent/10")
+    data = response.json()
+    articles = []
 
-    for t in t_data:
-        category = t['tag']
+    for d in data:
+        article_id = d['url'].split('/')[-1]
+        item2 = Item(
+            title = d['title'],
+            pubDate = datetime.datetime(2014, 12, 29, 10, 00),
+            link = f"http://localhost/article/{article_id}"
+        )
+        a_response = requests.get(f"http://localhost/article/{article_id}")
+        a_data = a_response.json()
+        item2.title = a_data['title']
+        item2.author = a_data['author']
+        item2.description = a_data['body']
 
-    for c in c_data:
-        count = c['count']
+        c_response = requests.get(f"http://localhost/article/{article_id}/comments/count")
+        c_data = c_response.json()
+        item2.comments = c_data['count']
 
-    item2 = Item(
-        title = title,
-        author = author,
-        description = description,
-        category = category,
-        comment = count,
-        pubDate = datetime.datetime(2014, 12, 29, 10, 00)
-    )
+        t_response = requests.get(f"http://localhost/article/{article_id}/tags")
+        t_data = t_response.json()
+        item2.categories = t_data['tags']
+        articles.append(item2)
 
     feed = Feed(
         title = "Full feed",
@@ -68,23 +70,28 @@ def full_feed():
         description = "A full feed containing the full text for each article, its tags as RSS categories, and a comment count.",
         language = "en-US",
         lastBuildDate = datetime.datetime.now(),
-        item = [item2]
+        item = articles
     )
     return feed.rss()
 
 #A comment feed for each articles
 @app.route("/rss/comments", methods = ['GET'])
 def comment_feed():
-    c_response = requests.get("http://localhost/article/get?url=/comments")
-    c_data = c_response.json()
-    for c in c_data:
-        item3 = Item(
-            title = c['title'],
-            author = c['author'],
-            comment = c['comment'],
-            pubDate = datetime.datetime(2014, 12, 29, 10, 00),
-            link = c['url']
-        )
+    a_response = requests.get("http://localhost/articles/recent/10")
+    a_data = a_response.json()
+    comments = []
+    for a in a_data:
+        article_id = a['url'].split('/')[-1]
+        c_response = requests.get(f"http://localhost/article/{article_id}/comments")
+        c_data = c_response.json()
+        for c in c_data:
+            item3 = Item(
+                author = c['author'],
+                comment = c['comment']
+                pubDate = datetime.datetime(2014, 12, 29, 10, 00),
+                link = f"http://localhost/article/{article_id}"
+            )
+            comments.append(item3)
 
     feed = Feed(
         title = "Comment feed",
@@ -92,7 +99,7 @@ def comment_feed():
         description = "A comment feed for each articles",
         language = "en-US",
         lastBuildDate = datetime.datetime.now(),
-        item = [item3]
+        item = comments
     )
     return feed.rss()
 
