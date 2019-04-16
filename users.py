@@ -2,7 +2,7 @@
 import flask
 from flask import Flask, request, g, jsonify, Response, json, url_for, make_response
 import sqlite3
-from flask_basicauth import BasicAuth
+# from flask_basicauth import BasicAuth
 import hashlib
 
 app = flask.Flask(__name__)
