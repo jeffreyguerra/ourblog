@@ -87,7 +87,7 @@ def comment_feed():
         for c in c_data:
             item3 = Item(
                 author = c['author'],
-                comment = c['comment']
+                comment = c['comment'],
                 pubDate = datetime.datetime(2014, 12, 29, 10, 00),
                 link = f"http://localhost/article/{article_id}"
             )
