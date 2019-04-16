@@ -3,7 +3,6 @@ from flask import request, jsonify, g
 
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
 DATABASE = 'article.db'
 
 

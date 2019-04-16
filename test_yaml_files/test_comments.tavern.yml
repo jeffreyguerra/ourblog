@@ -36,7 +36,7 @@ stages:
 
   - name: Get number of comments on a given article
     request:
-      url: "http://localhost/article/1/comments/count"
+      url: "http://localhost/article/comments/count/1"
       method: GET
       headers:
         content-type: application/json
@@ -45,7 +45,7 @@ stages:
 
   - name: Check that the comments on the article were returned in order
     request:
-      url: "http://localhost/article/1/comments"
+      url: "http://localhost/article/comments/1"
       method: GET
       headers:
         content-type: application/json

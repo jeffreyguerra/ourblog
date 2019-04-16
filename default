@@ -117,15 +117,32 @@ server {
 
 
 	location = /auth {
-			internal;
-			proxy_pass	http://users_serv/auth;
-			proxy_pass_header Authorization;
-			proxy_set_header Authorization $http_authorization;
-			proxy_pass_request_body off;
-			proxy_set_header Content-Length "";
-			proxy_set_header X-Original-URI $request_uri;
-				}
-		}
+		internal;
+		proxy_pass http://users_serv/auth;
+		proxy_pass_header Authorization;
+		proxy_set_header Authorization $http_authorization;
+		proxy_pass_request_body off;
+		proxy_set_header Content-Length "";
+		proxy_set_header X-Original-URI $request_uri;
+	}
+	# pass PHP scripts to FastCGI server
+	#
+	#location ~ \.php$ {
+	#	include snippets/fastcgi-php.conf;
+	#
+	#	# With php-fpm (or other unix sockets):
+	#	fastcgi_pass unix:/var/run/php/php7.0-fpm.sock;
+	#	# With php-cgi (or other tcp sockets):
+	#	fastcgi_pass 127.0.0.1:9000;
+	#}
+
+	# deny access to .htaccess files, if Apache's document root
+	# concurs with nginx's one
+	#
+	#location ~ /\.ht {
+	#	deny all;
+	#}
+}
 
 # Virtual Host configuration for example.com
 #
