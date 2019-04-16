@@ -1,6 +1,6 @@
 import flask, hashlib, sqlite3, datetime
 from flask import request, jsonify, g
-from flask_basicauth import BasicAuth
+
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -38,7 +38,6 @@ def user_exists(user):
         return False
 
 @app.route('/articles', methods=['POST'])
-@auth.required
 def create_article():
     data = request.get_json()
     title = data['title']
@@ -75,8 +74,7 @@ def get_article(id):
         return jsonify({'Error': 'Article not found'}), 404
 
 
-@app.route('/articles/edit/<id>', methods=['PATCH'])
-@auth.required
+@app.route('/articles/<id>', methods=['PATCH'])
 def edit_article(id):
     data = request.get_json()
     title = data['title']
@@ -100,8 +98,7 @@ def edit_article(id):
     else:
         return jsonify({'Error': 'No permission'}), 409
 
-@app.route('/articles/delete/<id>', methods=['DELETE'])
-@auth.required
+@app.route('/articles/<id>', methods=['DELETE'])
 def delete_article(id):
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = make_dicts
