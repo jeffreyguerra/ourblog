@@ -99,7 +99,7 @@ server {
 		proxy_pass http://users_serv/users/new;
 	}
 
-	locations /comments {
+	location /comments {
 
 		auth_request /auth;
 		proxy_pass http://comments_serv/comments;
