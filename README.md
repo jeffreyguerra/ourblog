@@ -5,4 +5,8 @@
 * Chloe Ho
 * Christian Jimenez
 
-#when you download these files, to run, use "./startup.sh" once you have navigated into the directory that holds these files.
+#The way we test this is, we navigate to the folder, we create the dbs with:
+#1. python3 create_dbs.py
+#then:
+#2. foreman start --formation all=3
+#This is assuming you have nginx and foreman installed. 
