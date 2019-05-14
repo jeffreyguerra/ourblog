@@ -1,31 +1,15 @@
 import flask, hashlib, sqlite3, datetime
 from flask import request, jsonify, g
-
+from cassandra.cluster import Clusterfrom cassandra.cluster import Cluster
 
 app = flask.Flask(__name__)
-DATABASE = 'article.db'
 
 
 
-def make_dicts(cursor, row):
-    return dict((cursor.description[idx][0], value)
-                for idx, value in enumerate(row))
-
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = make_dicts
-    return db
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
 
 def user_exists(user):
-    conn = sqlite3.connect(DATABASE)
+    cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
     cur = conn.cursor()
     query = "SELECT * FROM users WHERE username = ?"
     cur.execute(query, [user])
@@ -38,6 +22,8 @@ def user_exists(user):
 
 @app.route('/articles', methods=['POST'])
 def create_article():
+	cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
     data = request.get_json()
     title = data['title']
     body = data['body']
@@ -45,27 +31,24 @@ def create_article():
     user = request.authorization['username']
 
 
-    conn = sqlite3.connect(DATABASE)
-    cur = conn.cursor()
 
     if user_exists(user):
         query = "INSERT INTO articles (title, body, author, date_added, last_modified) VALUES (?, ?, ?, ?, ?)"
-        cur.execute(query, [title, body, user, date, date])
+        session.execute(query, [title, body, user, date, date])
 
-        conn.commit()
-            # id = cur.lastrowid
-        conn.close()
+        session.commit()
+        session.close()
         return jsonify({'Success': 'Article created'}), 201
 
 
 
 @app.route('/articles/<id>', methods=['GET'])
 def get_article(id):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
+    sesson.row_factory = make_dicts
     query = "SELECT * FROM articles WHERE article_id = ?"
-    result = cur.execute(query, [id]).fetchone()
+    result = session.execute(query, [id]).fetchone()
     conn.close()
     if result:
         return jsonify(result), 201
@@ -79,85 +62,75 @@ def edit_article(id):
     title = data['title']
     body = data['body']
     author = user_exists(request.authorization['username'])
-
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+	
+	cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
+   
 
     query = "SELECT * FROM articles WHERE article_id = ?"
-    result = cur.execute(query, [id]).fetchone()
+    result = session.execute(query, [id]).fetchone()
 
     if result:
         date = datetime.datetime.now()
         query = "UPDATE articles SET title = ?, body = ?, last_modified = ? WHERE article_id = ?"
-        cur.execute(query, [title, body, date, id])
-        conn.commit()
-        conn.close()
+        session.execute(query, [title, body, date, id])
+        session.commit()
+        session.close()
         return jsonify({'Success': 'Article updated'}), 201
     else:
         return jsonify({'Error': 'No permission'}), 409
 
 @app.route('/articles/delete/<id>', methods=['DELETE'])
 def delete_article(id):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+  	cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
 
     query = "SELECT * FROM articles WHERE article_id = ?"
-    result = cur.execute(query, [id]).fetchone()
+    result = session.execute(query, [id]).fetchone()
 
     if result:
         query = "DELETE FROM articles WHERE article_id = ?"
         cur.execute(query, [id])
-        conn.commit()
-        conn.close()
+        session.commit()
+        session.close()
         return jsonify({'Success': 'Article deleted'}), 201
     else:
         return jsonify({'Error': 'not found'}), 404
 
 @app.route('/articles/recent/<amount>', methods=['GET'])
 def view_recent_articles(amount):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+ 	cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
 
     query = "SELECT * FROM articles ORDER BY date_added DESC LIMIT ?"
-    result = cur.execute(query, [amount]).fetchall()
-    conn.commit()
-    conn.close()
+    result = session.execute(query, [amount]).fetchall()
+    session.commit()
+    session.close()
     return jsonify(result), 201
 
 @app.route('/articles/recent/meta/<amount>', methods=['GET'])
 def get_recent_articles_meta(amount):
-    #amount = request.args['amount']
-
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+  	cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
 
     query = "SELECT article_id, title, author, date_added FROM articles ORDER BY date_added DESC LIMIT ?"
-    result = cur.execute(query, [amount]).fetchall()
-    conn.commit()
-    conn.close()
+    result = session.execute(query, [amount]).fetchall()
+    session.commit()
+    session.close()
     return jsonify(result), 201
 
-app.run()
 
 ###last-modified article
 @app.route('/articles/recent/meta/<amount>', methods=['GET'])
 def get_most_recent_article(amount):
-    #amount = request.args['amount']
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = make_dicts
-    cur = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+	session = cluster.connect()
 
     query = "SELECT article_id, title, author, date_added FROM articles ORDER BY date_added DESC LIMIT ?"
-    result = cur.execute(query, [amount]).fetchall()
-    conn.commit()
-    conn.close()
+    result = session.execute(query, [amount]).fetchall()
+    session.commit()
+    session.close()
     return jsonify(result), 201
 
 app.run()
-
-
 

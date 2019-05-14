@@ -1,11 +1,9 @@
 import sqlite3
 import time
-
-#import BasicAuth
+from cassandra.cluster import Cluster
 from flask import Flask, jsonify, request
 import hashlib
 
-DATABASE = "tag.db"
 app = Flask(__name__)
 
 
@@ -17,12 +15,12 @@ app = Flask(__name__)
 def add_url_and_tag(url, tag):
     if request.method == 'PUT':
         try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
+            cluster = Cluster(['172.17.0.2'])
+   			session = cluster.connect()
             query = '''REPLACE INTO tags(url, tag) VALUES(?, ?)'''
-            cursor.execute(query, (url, tag))
-            conn.commit()
-            conn.close()
+            session.execute(query, (url, tag))
+            session.commit()
+            session.close()
             print(query)
             return jsonify({"true": "success"}), 200
         except Exception as exc:
@@ -31,15 +29,15 @@ def add_url_and_tag(url, tag):
 
     else:
         try:
-            conn = sqlite3.connect(DATABASE)
-            cursor = conn.cursor()
+            cluster = Cluster(['172.17.0.2'])
+   			session = cluster.connect()
             query = '''DELETE FROM tags
                         WHERE url = ?
                          AND tag = ?'''
-            cursor.execute(query, (url, tag))
+            session.execute(query, (url, tag))
 
-            conn.commit()
-            conn.close()
+            session.commit()
+            session.close()
             print(query)
             return jsonify({"true": "success"}), 200
         except Exception as exc:
@@ -51,13 +49,13 @@ def add_url_and_tag(url, tag):
 
 @app.route('/article/<url>/tags', methods = ['GET'])
 def get_tags_for_url(url):
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+   	session = cluster.connect()
 
     query = '''SELECT tag
     FROM tags WHERE url = ?'''
-    all_tags = cursor.execute(query, [url]).fetchall()
-    conn.close()
+    all_tags = session.execute(query, [url]).fetchall()
+    session.close()
     if all_tags:
         return jsonify(all_tags), 200
     else:
@@ -68,17 +66,16 @@ def get_tags_for_url(url):
 @app.route('/article/tags/<tag>', methods = ['GET'])
 def get_urls_with_given_tag(tag):
 
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+    session = cluster.connect()
 
     query = '''SELECT  url
         FROM tags
         WHERE tag = ?'''
 
-    cursor.execute(query, [tag])
+    session.execute(query, [tag])
 
-    results = cursor.fetchall()
+    results = session.fetchall()
     results = [dict(row) for row in results]
     print(type(results))
     print(results)
@@ -87,7 +84,7 @@ def get_urls_with_given_tag(tag):
     for item in results:
         output.append(item['url'])
 
-    conn.close()
+    session.close()
 
     print(query)
     return jsonify({"urls": output}), 200

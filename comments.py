@@ -1,23 +1,21 @@
 import sqlite3
 import time
-
-#import BasicAuth
 from flask import Flask, jsonify, request
+from cassandra.cluster import Cluster
 import hashlib
 
-DATABASE = "comment.db"
 app = Flask(__name__)
 
 
 @app.route('/article/<url>/comments', methods = ['POST'])
 def post_comment(url):
     try:
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
+        cluster = Cluster(['172.17.0.2'])
+    	session = cluster.connect()
         query = '''SELECT 1
               FROM articles
               WHERE id = ?'''
-        result = cursor.execute(query, (url)).fetchall()
+        result = session.execute(query, (url)).fetchall()
 
 
         if not result:
@@ -38,12 +36,12 @@ def post_comment(url):
         else:
             return jsonify({"Error": "No comment"}), 400
 
-        cursor.execute(query, (url, epoch_time, author, comment))
-        conn.commit()
+        session.execute(query, (url, epoch_time, author, comment))
+        session.commit()
 
         id = cursor.lastrowid
 
-        conn.close()
+        session.close()
 
         return jsonify({"id": id}), 200
     except Exception as exc:
@@ -54,38 +52,37 @@ def post_comment(url):
 # @auth.required
 def delete_Comment(url, id):
     # Delete an individual comment
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
+ 	cluster = Cluster(['172.17.0.2'])
+    session = cluster.connect('blog')
     try:
         query = '''DELETE FROM comments
                     WHERE id = ?
                     AND url = ?'''
-        cursor.execute(query, (id, url))
+        session.execute(query, (id, url))
 
-        conn.commit()
+        session.commit()
     except:
         return jsonify({"Error": "Comment didnt exist"}), 404
-    conn.close()
+    session.close()
     return jsonify({"success": "Comment deleted"}), 200
 
 ####Get number of comments on a given article
 @app.route('/article/comments/count/<id>', methods = ['GET'])
 def get_number_of_comments(id):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+    session = cluster.connect()
 
     query = '''SELECT COUNT(*) AS COUNT
         FROM comments
         WHERE id = ?
         '''
 
-    cursor.execute(query, [id])
+    session.execute(query, [id])
 
-    results = cursor.fetchone()
+    results = session.fetchone()
     results = dict(results)
     count = results['COUNT']
-    conn.close()
+    session.close()
 
     print(query)
     return jsonify({"count": count}), 200
@@ -98,16 +95,15 @@ def get_number_most_recent_comments(url):
     if not limit:
         return jsonify({"Error": "Please provide limit in query string e.g. ?limit=10"}), 200
 
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+    session = cluster.connect()
 
     query = '''SELECT id, url, date_added, author, comment
                 FROM comments
                 WHERE url = ?
                 ORDER BY ID ASC
                 LIMIT ?;'''
-    cursor.execute(query, [url, limit])
+    session.execute(query, [url, limit])
 
     results = cursor.fetchall()
     results = [dict(row) for row in results]
@@ -126,18 +122,17 @@ def get_most_recent_comment(url, id):
     if not limit:
         return jsonify({"Error": "Please provide limit in query string e.g. ?limit=10"}), 200
 
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cluster = Cluster(['172.17.0.2'])
+    session = cluster.connect()
 
     query = '''SELECT id, url, date_added, author, comment
                 FROM comments
                 WHERE url = ?
                 ORDER BY ID ASC
                 LIMIT ?;'''
-    cursor.execute(query, [url, limit])
+    session.execute(query, [url, limit])
 
-    results = cursor.fetchall()
+    results = session.fetchall()
     results = [dict(row) for row in results]
 
     for item in results:
