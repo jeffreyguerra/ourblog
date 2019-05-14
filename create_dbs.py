@@ -1,39 +1,80 @@
-import sqlite3
+from cassandra.cluster import Cluster
+cluster = Cluster(['172.17.0.2'])
+session = cluster.connect()
 
-CREATE_USER_DB_FILE = 'create_userdb.sql'
-CREATE_ARTICLE_DB_FILE = 'create_articledb.sql'
-CREATE_TAG_DB_FILE = 'create_tagdb.sql'
-CREATE_COMMENT_DB_FILE = 'create_commentdb.sql'
 
-USER_DATABASE = "user.db"
-ARTICLE_DATABASE = "article.db"
-TAG_DATABASE = "tag.db"
-COMMENT_DATABASE = "comment.db"
 
 #Creates User DB
-conn = sqlite3.connect(USER_DATABASE)
-cursor = conn.cursor()
-with open(CREATE_USER_DB_FILE) as queryfile:
-    cursor.executescript(queryfile.read())
-conn.close()
+session.execute(
+    """CREATE TABLE users(
+ 	 id INTEGER PRIMARY KEY AUTOINCREMENT,
+  	username TEXT NOT NULL,
+  	email TEXT NOT NULL,
+  	password TEXT NOT NULL
+	);
+
+	INSERT INTO users
+	(
+ 	 username,
+ 	 email,
+  	password
+	)	
+ 	 VALUES
+ 	 (
+ 	   'tho96',
+ 	   'abc@example.com',
+	    'password'
+ 	 );"""
+)
 
 #Creates Article DB
-conn = sqlite3.connect(ARTICLE_DATABASE)
-cursor = conn.cursor()
-with open(CREATE_ARTICLE_DB_FILE) as queryfile:
-    cursor.executescript(queryfile.read())
-conn.close()
+session.execute(
+	"""DROP TABLE IF EXISTS articles;
+
+		CREATE TABLE articles(
+		  article_id uuid PRIMARY KEY AUTOINCREMENT,
+		  title TEXT NOT NULL,
+		  body TEXT NOT NULL,
+		  author TEXT NOT NULL,
+		  date_added TEXT,
+		  last_modified TEXT
+		);
+		INSERT INTO Articles(
+		  title,
+		  body,
+		  author,
+		  date_added,
+		  last_modified
+		)
+		  VALUES
+		  (
+		    'title 1',
+		    'this is the body',
+		    'tho96',
+		    DATETIME('now','localtime'),
+		    DATETIME('now','localtime')
+		  );"""
+)
 
 #Creates Tag DB
-conn = sqlite3.connect(TAG_DATABASE)
-cursor = conn.cursor()
-with open(CREATE_TAG_DB_FILE) as queryfile:
-    cursor.executescript(queryfile.read())
-conn.close()
+session.execute(
+	"""DROP TABLE IF EXISTS tags;
+	CREATE TABLE tags (
+	url INTEGER,
+	tag TEXT,
+	PRIMARY KEY(url, tag)
+	);"""
+)
 
 #Creates Comments DB
-conn = sqlite3.connect(COMMENT_DATABASE)
-cursor = conn.cursor()
-with open(CREATE_COMMENT_DB_FILE) as queryfile:
-    cursor.executescript(queryfile.read())
-conn.close()
+session.execute(
+	"""DROP TABLE IF EXISTS comments;
+
+	CREATE TABLE comments(
+	    id INTEGER PRIMARY KEY AUTOINCREMENT,
+	    url INTEGER NOT NULL,
+	    date_added INTEGER NOT NULL,
+	    author TEXT NOT NULL,
+	    comment TEXT NOT NULL
+	 );"""
+)
