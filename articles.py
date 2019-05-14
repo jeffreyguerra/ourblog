@@ -142,3 +142,22 @@ def get_recent_articles_meta(amount):
     return jsonify(result), 201
 
 app.run()
+
+###last-modified article
+@app.route('/articles/recent/meta/<amount>', methods=['GET'])
+def get_most_recent_article(amount):
+    #amount = request.args['amount']
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = make_dicts
+    cur = conn.cursor()
+
+    query = "SELECT article_id, title, author, date_added FROM articles ORDER BY date_added DESC LIMIT ?"
+    result = cur.execute(query, [amount]).fetchall()
+    conn.commit()
+    conn.close()
+    return jsonify(result), 201
+
+app.run()
+
+
+

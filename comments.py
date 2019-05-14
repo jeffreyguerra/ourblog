@@ -116,3 +116,33 @@ def get_number_most_recent_comments(url):
         item['date_added'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item['date_added']))
 
     return jsonify({'comments': results}), 200
+
+@app.route('/article/comments/Last-Modified', methods = ['GET'])
+#p3
+def get_most_recent_comment(url, id): 
+#here press 1
+
+    limit = request.args.get('limit')
+    if not limit:
+        return jsonify({"Error": "Please provide limit in query string e.g. ?limit=10"}), 200
+
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = '''SELECT id, url, date_added, author, comment
+                FROM comments
+                WHERE url = ?
+                ORDER BY ID ASC
+                LIMIT ?;'''
+    cursor.execute(query, [url, limit])
+
+    results = cursor.fetchall()
+    results = [dict(row) for row in results]
+
+    for item in results:
+        item['date_added'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item['date_added']))
+
+    return jsonify({'comments': results}), 200
+
+
