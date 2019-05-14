@@ -36,7 +36,7 @@ Start the services: python3 start.py
 
 Nginx configuration: Replace code in /etc/nginx/sites-enabled/default with code in the nginx-setup/sites-enabled-default file Once foreman has started, compare the ports for each service with the ports in the upstream portion of the nginx config file. Alter if necessary.
 
-Start nginx: '''sudo service nginx restart'''
+Start nginx: ```sudo service nginx restart```
 
 RSS: Check the api docs for the RSS feeder for what URLs to hit.
 
