@@ -26,6 +26,14 @@ Four microservices that make up a blog web service. The service allows users to 
 
 ```sudo pip3 install Flask-BasicAuth```
 
+```sudo apt install --yes docker.io```
+
+```sudo usermod -aG docker $USER```
+
+```sudo apt install --yes siege```
+
+```sudo apt install --yes python3-cassandra```
+
 # Setup #
 Navigate to the project directory
 
