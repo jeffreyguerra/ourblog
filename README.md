@@ -14,17 +14,17 @@ Four microservices that make up a blog web service. The service allows users to 
 
 # Things to install:
 
-pip3 install tavern
+```pip3 install tavern```
 
-pip3 install foreman
+```pip3 install foreman```
 
-sudo apt install python-pytest
+```sudo apt install python-pytest```
 
-sudo apt install ruby-foreman
+```sudo apt install ruby-foreman```
 
-sudo apt install --yes nginx-extras
+```sudo apt install --yes nginx-extras```
 
-sudo pip3 install Flask-BasicAuth
+```sudo pip3 install Flask-BasicAuth```
 
 # Setup #
 Navigate to the project directory
